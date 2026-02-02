@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Hotel Booking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">🏨 Hotel Booking</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="user.html">Book Now</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="color: white; text-align: center; margin-bottom: 2rem;">Admin Panel</h1>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <div class="grid grid-2">
+            <!-- Add New Room -->
+            <div class="glass-card">
+                <h2 style="color: white; margin-bottom: 1.5rem;">Add New Room</h2>
+                <form id="addRoomForm">
+                    <div class="form-group">
+                        <label for="roomNumber">Room Number</label>
+                        <input type="text" id="roomNumber" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomTypeId">Room Type</label>
+                        <select id="roomTypeId" class="form-control" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Room</button>
+                </form>
+            </div>
+
+            <!-- Delete Room -->
+            <div class="glass-card">
+                <h2 style="color: white; margin-bottom: 1.5rem;">Delete Room</h2>
+                <form id="deleteRoomForm">
+                    <div class="form-group">
+                        <label for="deleteRoomId">Room ID</label>
+                        <input type="number" id="deleteRoomId" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Delete Room</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- All Rooms -->
+        <div class="glass-card mt-4">
+            <h2 style="color: white; margin-bottom: 1.5rem;">All Rooms</h2>
+            <button class="btn btn-primary mb-3" onclick="loadAllRooms()">Refresh Rooms</button>
+            <div class="table-container">
+                <table id="roomsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Room Number</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Price/Night</th>
+                            <th>Capacity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Click "Refresh Rooms" to load data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Bookings -->
+        <div class="glass-card mt-4">
+            <h2 style="color: white; margin-bottom: 1.5rem;">All Bookings</h2>
+            <button class="btn btn-primary mb-3" onclick="loadAllBookings()">Refresh Bookings</button>
+            <div class="table-container">
+                <table id="bookingsTable">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest Name</th>
+                            <th>Room ID</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Click "Refresh Bookings" to load data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
