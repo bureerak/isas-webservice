@@ -80,6 +80,8 @@ All API requests are routed through `/api`.
 
 ## ⚙️ Configuration
 
+- docker build -t hotel-api:latest ./Database
+- docker build -t hotel-web:latest -f Dockerfile.web .
 - **Database**: The SQLite database file is persisted in `./Database/db/database.db`.
 - **Nginx**: Configured to serve static files from `/html` and proxy `/api/*` requests to the backend service.
 
