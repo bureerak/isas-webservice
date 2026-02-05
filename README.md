@@ -85,5 +85,22 @@ All API requests are routed through `/api`.
 - **Database**: The SQLite database file is persisted in `./Database/db/database.db`.
 - **Nginx**: Configured to serve static files from `/html` and proxy `/api/*` requests to the backend service.
 
+## ENV
+### mysql_db:
+
+- MYSQL_ROOT_PASSWORD=password
+
+- MYSQL_DATABASE=hotel_db
+
+### database:
+
+- DB_HOST=mysql_db
+
+- DB_USER=root
+
+- DB_PASSWORD=password
+
+- DB_NAME=hotel_db
+
 ## 📝 License
 This project is for educational purposes (ISAS).
