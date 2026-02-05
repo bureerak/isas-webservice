@@ -1,6 +1,6 @@
 # Hotel Booking System (ISAS)
 
-A modern, full-stack hotel booking web application featuring a glassmorphism UI, real-time availability checking, and a comprehensive admin panel. Built with Node.js, SQLite, Nginx, and Docker.
+A modern, full-stack hotel booking web application featuring a glassmorphism UI, real-time availability checking, and a comprehensive admin panel. Built with Node.js, MySQL, Nginx, and Docker.
 
 ## 🚀 Features
 
@@ -14,13 +14,13 @@ A modern, full-stack hotel booking web application featuring a glassmorphism UI,
 - **Dashboard**: Overview of all rooms and bookings.
 - **Room Management**: Add new rooms with dynamic room types, delete existing rooms.
 - **Booking Management**: View all customer bookings with status indicators.
-- **Auto-Seeding**: Automatic database population for initial setup.
+- **Auto-Initialization**: Automatic database schema setup for initial installation.
 
 ## 🛠 Tech Stack
 
 - **Frontend**: HTML5, CSS3 (Vanilla), JavaScript (ES6+)
 - **Backend**: Node.js, Express.js
-- **Database**: SQLite
+- **Database**: MySQL 8.0
 - **Infrastructure**: Nginx (Reverse Proxy), Docker & Docker Compose
 
 ## 📂 Project Structure
@@ -28,9 +28,8 @@ A modern, full-stack hotel booking web application featuring a glassmorphism UI,
 ```
 ISAS/
 ├── Database/           # Backend API Service
-│   ├── db/             # SQLite database storage
 │   ├── index.js        # Express server & API routes
-│   └── sqlite3.js      # Database initialization & Seeding
+│   └── mysql_db.js     # MySQL Database connection & queries
 ├── html/               # Frontend Static Files
 │   ├── index.html      # Landing Page
 │   ├── user.html       # Booking Interface
@@ -39,6 +38,7 @@ ISAS/
 │   └── app.js          # Frontend Logic
 ├── nginx/              # Nginx Configuration
 │   └── nginx.conf      # Reverse Proxy Config
+├── Dockerfile.web      # Dockerfile for frontend service
 └── docker-compose.yaml # Docker Orchestration
 ```
 
@@ -60,7 +60,7 @@ docker-compose up -d --build
 4. **Access the application**:
    - **Main Site**: [http://localhost](http://localhost)
    - **Admin Panel**: [http://localhost/admin.html](http://localhost/admin.html)
-   - **API Docs (Swagger)**: [http://localhost/api-docs](http://localhost/api-docs) (Port 3000 mapped internally, accessed via Nginx proxy)
+   - **API Docs (Swagger)**: [http://localhost/api-docs](http://localhost/api-docs)
 
 ## 📡 API Endpoints
 
@@ -76,33 +76,28 @@ All API requests are routed through `/api`.
 | `POST` | `/bookings`          | Create a new booking |
 | `POST` | `/rooms`             | Add a new room |
 | `DELETE`| `/rooms/:id`        | Delete a room |
-| `POST` | `/seed`              | Manually trigger database seeding |
+| `PATCH` | `/bookings/:id/check-in` | Update booking status to Checked-In |
+| `PATCH` | `/bookings/:id/check-out` | Update booking status to Checked-Out |
 
 ## ⚙️ Configuration
 
-```bash
-docker build -t hotel-api:latest ./Database
-docker build -t hotel-web:latest -f Dockerfile.web .
-```
-- **Database**: The SQLite database file is persisted in `./Database/db/database.db`.
-- **Nginx**: Configured to serve static files from `/html` and proxy `/api/*` requests to the backend service.
+The application uses environment variables for database configuration, which are defined in `docker-compose.yaml`.
 
-## ENV
-### mysql_db:
+### Database Environment Variables
 
-- MYSQL_ROOT_PASSWORD=password
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| `DB_HOST` | Hostname of the MySQL container | `mysql_db` |
+| `DB_USER` | MySQL username | `root` |
+| `DB_PASSWORD` | MySQL password | `password` |
+| `DB_NAME` | Database name | `hotel_db` |
 
-- MYSQL_DATABASE=hotel_db
+### MySQL Container Variables
 
-### database:
-
-- DB_HOST=mysql_db
-
-- DB_USER=root
-
-- DB_PASSWORD=password
-
-- DB_NAME=hotel_db
+| Variable | Description | Value |
+|----------|-------------|-------|
+| `MYSQL_ROOT_PASSWORD` | Root password for MySQL | `password` |
+| `MYSQL_DATABASE` | Database name to create | `hotel_db` |
 
 ## 📝 License
 This project is for educational purposes (ISAS).
