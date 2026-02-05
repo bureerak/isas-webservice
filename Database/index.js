@@ -1,5 +1,5 @@
 const express = require("express");
-const db = require("./sqlite3.js");
+const db = require("./mysql_db.js");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
@@ -29,32 +29,20 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Helper function for database queries using promises
-const dbRun = (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-        db.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve(this);
-        });
-    });
+// Helper function for database queries using promises (MySQL adapter)
+const dbRun = async (sql, params = []) => {
+    const [result] = await db.execute(sql, params);
+    return result;
 };
 
-const dbAll = (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-        db.all(sql, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
+const dbAll = async (sql, params = []) => {
+    const [rows] = await db.execute(sql, params);
+    return rows;
 };
 
-const dbGet = (sql, params = []) => {
-    return new Promise((resolve, reject) => {
-        db.get(sql, params, (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-        });
-    });
+const dbGet = async (sql, params = []) => {
+    const [rows] = await db.execute(sql, params);
+    return rows[0];
 };
 
 /**
@@ -70,34 +58,8 @@ const dbGet = (sql, params = []) => {
  *         description: Server error
  */
 app.post("/seed", async (req, res) => {
-    try {
-        // Check if RoomTypes already exist
-        const roomTypeCount = await dbGet("SELECT COUNT(*) as count FROM RoomTypes");
-
-        if (roomTypeCount.count > 0) {
-            return res.json({ message: "Database already has data. Seeding skipped." });
-        }
-
-        // Seed RoomTypes
-        const roomTypes = [
-            { name: "Standard", base_price: 1500, capacity: 2 },
-            { name: "Deluxe", base_price: 2500, capacity: 3 },
-            { name: "Suite", base_price: 4000, capacity: 4 }
-        ];
-
-        for (const rt of roomTypes) {
-            await dbRun("INSERT INTO RoomTypes (name, base_price, capacity) VALUES (?, ?, ?)",
-                [rt.name, rt.base_price, rt.capacity]);
-        }
-
-        res.json({
-            message: "Database seeded successfully!",
-            roomTypes: roomTypes.length
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
-    }
+    // Seeding is now handled in mysql_db.js initDB
+    res.json({ message: "Database seeding is handled automatically on startup." });
 });
 
 /**
@@ -409,7 +371,7 @@ app.post("/bookings", async (req, res) => {
 
         res.status(201).json({
             message: "Booking created successfully",
-            bookingId: result.lastID
+            bookingId: result.lastID || result.insertId // Support both or just insertId for mysql
         });
     } catch (err) {
         console.error(err);
@@ -581,11 +543,11 @@ app.post("/rooms", async (req, res) => {
 
         res.status(201).json({
             message: "Room created successfully",
-            roomId: result.lastID
+            roomId: result.lastID || result.insertId
         });
     } catch (err) {
         console.error(err);
-        if (err.message.includes("UNIQUE constraint failed")) {
+        if (err.message.includes("Duplicate entry")) { // MySQL duplicate error
             return res.status(400).json({ error: "Room number already exists" });
         }
         res.status(500).json({ error: err.message });
@@ -636,3 +598,4 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
 });
+

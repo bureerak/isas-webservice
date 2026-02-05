@@ -2,10 +2,29 @@ services:
   database:
     build: ./Database
     container_name: database
-    # ports:
-    #   - "3000:3000"
+    environment:
+      - DB_HOST=mysql_db
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=hotel_db
+    ports:
+      - "3000:3000"
     volumes:
       - ./db:/app/db
+    restart: always
+    depends_on:
+      - mysql_db
+
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: hotel_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     restart: always
 
   web:
@@ -19,3 +38,6 @@ services:
     restart: unless-stopped
     depends_on:
       - database
+
+volumes:
+  mysql_data:
