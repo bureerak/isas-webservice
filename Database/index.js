@@ -30,18 +30,21 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Helper function for database queries using promises (MySQL adapter)
+// dbRun is for WRITE operations (Master)
 const dbRun = async (sql, params = []) => {
-    const [result] = await db.execute(sql, params);
+    const [result] = await db.master.execute(sql, params);
     return result;
 };
 
+// dbAll is for READ operations (Slave)
 const dbAll = async (sql, params = []) => {
-    const [rows] = await db.execute(sql, params);
+    const [rows] = await db.slave.execute(sql, params);
     return rows;
 };
 
+// dbGet is for READ operations (Slave)
 const dbGet = async (sql, params = []) => {
-    const [rows] = await db.execute(sql, params);
+    const [rows] = await db.slave.execute(sql, params);
     return rows[0];
 };
 

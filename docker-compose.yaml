@@ -3,29 +3,46 @@ services:
     build: ./Database
     container_name: database
     environment:
-      - DB_HOST=mysql_db
+      - DB_HOST=mysql_master
+      - DB_READ_HOST=mysql_slave
       - DB_USER=root
       - DB_PASSWORD=password
       - DB_NAME=hotel_db
     ports:
       - "3000:3000"
-    volumes:
-      - ./db:/app/db
     restart: always
     depends_on:
-      - mysql_db
+      - mysql_master
+      - mysql_slave
 
-  mysql_db:
-    image: mysql:8.0
-    container_name: mysql_db
+  mysql_master:
+    build:
+      context: ./mysql
+      dockerfile: master.Dockerfile
+    container_name: mysql_master
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: hotel_db
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_master_data:/var/lib/mysql
     restart: always
+
+  mysql_slave:
+    build:
+      context: ./mysql
+      dockerfile: slave.Dockerfile
+    container_name: mysql_slave
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_slave_data:/var/lib/mysql
+    restart: always
+    depends_on:
+      - mysql_master
 
   web:
     image: nginx:alpine
@@ -40,4 +57,5 @@ services:
       - database
 
 volumes:
-  mysql_data:
+  mysql_master_data:
+  mysql_slave_data:

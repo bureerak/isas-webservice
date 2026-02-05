@@ -1,6 +1,6 @@
 const mysql = require("mysql2/promise");
 
-const dbConfig = {
+const masterConfig = {
     host: process.env.DB_HOST || "localhost",
     port: process.env.DB_PORT || "3306",
     user: process.env.DB_USER || "root",
@@ -11,12 +11,24 @@ const dbConfig = {
     queueLimit: 0
 };
 
-const pool = mysql.createPool(dbConfig);
+const slaveConfig = {
+    host: process.env.DB_READ_HOST || process.env.DB_HOST || "localhost",
+    port: process.env.DB_READ_PORT || "3306",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "password",
+    database: process.env.DB_NAME || "hotel_db",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
+
+const masterPool = mysql.createPool(masterConfig);
+const slavePool = mysql.createPool(slaveConfig);
 
 const initDB = async () => {
     try {
-        const connection = await pool.getConnection();
-        console.log("Connected to the MySQL database.");
+        const connection = await masterPool.getConnection();
+        console.log("Connected to the Master MySQL database.");
 
         // RoomTypes Table
         await connection.query(`CREATE TABLE IF NOT EXISTS RoomTypes (
@@ -47,7 +59,7 @@ const initDB = async () => {
             FOREIGN KEY (room_id) REFERENCES Rooms(id)
         )`);
 
-        console.log("Tables created successfully.");
+        console.log("Tables verified/created successfully on Master.");
 
         // Seed RoomTypes if empty
         const [roomTypesCount] = await connection.query("SELECT COUNT(*) as count FROM RoomTypes");
@@ -88,26 +100,27 @@ const initDB = async () => {
 
         connection.release();
     } catch (err) {
-        console.error("Database initialization error:", err);
-        // Retry logic could be added here if needed, but for now we log and process might exit or rely on restart
+        console.error("Database initialization error on Master:", err);
     }
 };
 
-// Wait for database to be ready (simple retry mechanism)
-const waitForDB = async (attempts = 5) => {
+const waitForDB = async (attempts = 10) => {
     while (attempts > 0) {
         try {
             await initDB();
             return;
         } catch (err) {
-            console.log("Waiting for database...");
+            console.log("Waiting for Master database...");
             attempts--;
             await new Promise(res => setTimeout(res, 5000));
         }
     }
-    console.error("Could not connect to database after multiple attempts.");
+    console.error("Could not connect to Master database after multiple attempts.");
 };
 
 waitForDB();
 
-module.exports = pool;
+module.exports = {
+    master: masterPool,
+    slave: slavePool
+};

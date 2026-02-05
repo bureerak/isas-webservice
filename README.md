@@ -1,6 +1,6 @@
 # Hotel Booking System (ISAS)
 
-A modern, full-stack hotel booking web application featuring a glassmorphism UI, real-time availability checking, and a comprehensive admin panel. Built with Node.js, MySQL, Nginx, and Docker.
+A modern, full-stack hotel booking web application featuring a glassmorphism UI, real-time availability checking, and a comprehensive admin panel. Built with Node.js, MySQL (Master-Slave Replication), Nginx, and Docker.
 
 ## 🚀 Features
 
@@ -14,13 +14,13 @@ A modern, full-stack hotel booking web application featuring a glassmorphism UI,
 - **Dashboard**: Overview of all rooms and bookings.
 - **Room Management**: Add new rooms with dynamic room types, delete existing rooms.
 - **Booking Management**: View all customer bookings with status indicators.
-- **Auto-Initialization**: Automatic database schema setup for initial installation.
+- **Scalable Architecture**: Master-Slave replication for separating Read and Write operations.
 
 ## 🛠 Tech Stack
 
 - **Frontend**: HTML5, CSS3 (Vanilla), JavaScript (ES6+)
 - **Backend**: Node.js, Express.js
-- **Database**: MySQL 8.0
+- **Database**: MySQL 8.0 (Master-Slave Replication)
 - **Infrastructure**: Nginx (Reverse Proxy), Docker & Docker Compose
 
 ## 📂 Project Structure
@@ -28,18 +28,18 @@ A modern, full-stack hotel booking web application featuring a glassmorphism UI,
 ```
 ISAS/
 ├── Database/           # Backend API Service
-│   ├── index.js        # Express server & API routes
-│   └── mysql_db.js     # MySQL Database connection & queries
+│   ├── index.js        # Express server & R/W Splitting logic
+│   └── mysql_db.js     # Master/Slave connection pools
+├── mysql/              # Database Configuration
+│   ├── conf/           # Custom my.cnf for Master/Slave
+│   └── initmaster/     # Replication user setup lines
 ├── html/               # Frontend Static Files
 │   ├── index.html      # Landing Page
-│   ├── user.html       # Booking Interface
-│   ├── admin.html      # Management Panel
 │   ├── styles.css      # CSS Styles
 │   └── app.js          # Frontend Logic
 ├── nginx/              # Nginx Configuration
 │   └── nginx.conf      # Reverse Proxy Config
-├── Dockerfile.web      # Dockerfile for frontend service
-└── docker-compose.yaml # Docker Orchestration
+└── docker-compose.yaml # Docker Orchestration (1 API, 2 MySQL, 1 Web)
 ```
 
 ## 🔧 Setup & Installation
@@ -55,49 +55,45 @@ ISAS/
 ```bash
 docker-compose up -d --build
 ```
-*This command builds the images and starts the services in the background.*
+*This command starts one Master DB, one Slave DB, the API service, and the Nginx web server.*
 
-4. **Access the application**:
+Alternatively, to build the images individually:
+```bash
+docker build -t hotel-mysql-master -f mysql/master.Dockerfile ./mysql
+docker build -t hotel-mysql-slave -f mysql/slave.Dockerfile ./mysql
+docker build -t hotel-api ./Database
+docker build -t hotel-web -f Dockerfile.web .
+```
+
+4. **Verify Replication**:
+   - Access the Slave database and run: `SHOW REPLICA STATUS\G;`
+   - It should show `Replica_IO_Running: Yes` and `Replica_SQL_Running: Yes`.
+
+5. **Access the application**:
    - **Main Site**: [http://localhost](http://localhost)
    - **Admin Panel**: [http://localhost/admin.html](http://localhost/admin.html)
-   - **API Docs (Swagger)**: [http://localhost/api-docs](http://localhost/api-docs)
 
 ## 📡 API Endpoints
 
-All API requests are routed through `/api`.
+All API requests are routed through `/api`. Read operations are automatically load-balanced to the Slave, while Write operations go to the Master.
 
-| Method | Endpoint             | Description |
-|--------|----------------------|-------------|
-| `GET`  | `/rooms`             | Get all rooms (Admin) |
-| `GET`  | `/rooms/available`   | Search available rooms by date |
-| `GET`  | `/roomtypes`         | Get available room types |
-| `GET`  | `/bookings`          | Get all bookings (Admin) |
-| `GET`  | `/bookings/:id`      | Get specific booking details |
-| `POST` | `/bookings`          | Create a new booking |
-| `POST` | `/rooms`             | Add a new room |
-| `DELETE`| `/rooms/:id`        | Delete a room |
-| `PATCH` | `/bookings/:id/check-in` | Update booking status to Checked-In |
-| `PATCH` | `/bookings/:id/check-out` | Update booking status to Checked-Out |
+| Method | Endpoint             | DB Target | Description |
+|--------|----------------------|-----------|-------------|
+| `GET`  | `/rooms`             | Slave     | Get all rooms (Admin) |
+| `GET`  | `/rooms/available`   | Slave     | Search available rooms |
+| `GET`  | `/bookings`          | Slave     | Get all bookings (Admin) |
+| `POST` | `/bookings`          | Master    | Create a new booking |
+| `PATCH`| `.../check-in`       | Master    | Update booking status |
+| `DELETE`| `/rooms/:id`        | Master    | Delete a room |
 
 ## ⚙️ Configuration
 
-The application uses environment variables for database configuration, which are defined in `docker-compose.yaml`.
-
-### Database Environment Variables
-
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| `DB_HOST` | Hostname of the MySQL container | `mysql_db` |
-| `DB_USER` | MySQL username | `root` |
-| `DB_PASSWORD` | MySQL password | `password` |
-| `DB_NAME` | Database name | `hotel_db` |
-
-### MySQL Container Variables
-
 | Variable | Description | Value |
 |----------|-------------|-------|
-| `MYSQL_ROOT_PASSWORD` | Root password for MySQL | `password` |
-| `MYSQL_DATABASE` | Database name to create | `hotel_db` |
+| `DB_HOST` | Master DB Host | `mysql_master` |
+| `DB_READ_HOST` | Slave DB Host | `mysql_slave` |
+| `DB_USER` | MySQL username | `root` |
+| `DB_PASSWORD` | MySQL password | `password` |
 
 ## 📝 License
 This project is for educational purposes (ISAS).
