@@ -1,6 +1,6 @@
 services:
   database:
-    build: ./Database
+    build: ./modules/backend
     container_name: database
     environment:
       - DB_HOST=mysql_master
@@ -8,6 +8,8 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - DB_NAME=hotel_db
+      - ZBX_HOSTNAME=Hotel-Backend-DB
+      - ZBX_SERVER_HOST=192.168.1.100  # Change to your Zabbix Server IP
     ports:
       - "3000:3000"
     restart: always
@@ -16,13 +18,13 @@ services:
       - mysql_slave
 
   mysql_master:
-    build:
-      context: ./mysql
-      dockerfile: master.Dockerfile
+    build: ./modules/mysql-master
     container_name: mysql_master
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: hotel_db
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=hotel_db
+      - ZBX_HOSTNAME=Hotel-SQL-Master
+      - ZBX_SERVER_HOST=192.168.1.100  # Change to your Zabbix Server IP
     ports:
       - "3306:3306"
     volumes:
@@ -30,12 +32,12 @@ services:
     restart: always
 
   mysql_slave:
-    build:
-      context: ./mysql
-      dockerfile: slave.Dockerfile
+    build: ./modules/mysql-slave
     container_name: mysql_slave
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      - MYSQL_ROOT_PASSWORD=password
+      - ZBX_HOSTNAME=Hotel-SQL-Slave
+      - ZBX_SERVER_HOST=192.168.1.100  # Change to your Zabbix Server IP
     ports:
       - "3307:3306"
     volumes:
@@ -45,13 +47,13 @@ services:
       - mysql_master
 
   web:
-    image: nginx:alpine
+    build: ./modules/frontend
     container_name: web
+    environment:
+      - ZBX_HOSTNAME=Hotel-Frontend-Web
+      - ZBX_SERVER_HOST=192.168.1.100  # Change to your Zabbix Server IP
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./html:/usr/share/nginx/html
     restart: unless-stopped
     depends_on:
       - database

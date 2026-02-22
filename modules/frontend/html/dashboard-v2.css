@@ -1,0 +1,240 @@
+:root {
+    --side-nav-width: 260px;
+    --top-bar-height: 70px;
+    --primary: #1e40af;
+    --primary-light: #dbeafe;
+    --secondary: #475569;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --surface: #ffffff;
+    --background: #f1f5f9;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+body.dashboard-v2 {
+    background-color: var(--background);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+.material-symbols-outlined {
+    vertical-align: middle;
+    font-size: 1.25rem;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--side-nav-width);
+    background-color: #0f172a;
+    color: white;
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 0.75rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.nav-item.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Main Content */
+.main-wrapper {
+    flex: 1;
+    margin-left: var(--side-nav-width);
+    display: flex;
+    flex-direction: column;
+}
+
+.top-bar {
+    height: var(--top-bar-height);
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.page-content {
+    padding: 2rem;
+    flex: 1;
+}
+
+/* UI Components */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card-v2 {
+    background-color: var(--surface);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.stat-title {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.card-v2 {
+    background-color: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-title-v2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Table v2 */
+.table-v2-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-v2 {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-v2 th {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.table-v2 td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.table-v2 tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badge v2 */
+.badge-v2 {
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-available {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-occupied {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-cleaning {
+    background-color: #fef9c3;
+    color: #854d0e;
+}
+
+.badge-maintenance {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 80px;
+    }
+
+    .sidebar-header span {
+        display: none;
+    }
+
+    .nav-item span {
+        display: none;
+    }
+
+    .main-wrapper {
+        margin-left: 80px;
+    }
+}

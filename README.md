@@ -27,19 +27,13 @@ A modern, full-stack hotel booking web application featuring a glassmorphism UI,
 
 ```
 ISAS/
-├── Database/           # Backend API Service
-│   ├── index.js        # Express server & R/W Splitting logic
-│   └── mysql_db.js     # Master/Slave connection pools
-├── mysql/              # Database Configuration
-│   ├── conf/           # Custom my.cnf for Master/Slave
-│   └── initmaster/     # Replication user setup lines
-├── html/               # Frontend Static Files
-│   ├── index.html      # Landing Page
-│   ├── styles.css      # CSS Styles
-│   └── app.js          # Frontend Logic
-├── nginx/              # Nginx Configuration
-│   └── nginx.conf      # Reverse Proxy Config
-└── docker-compose.yaml # Docker Orchestration (1 API, 2 MySQL, 1 Web)
+├── modules/
+│   ├── backend/           # Node.js backend (Express API)
+│   ├── frontend/          # Nginx frontend (Static files)
+│   ├── mysql-master/      # MySQL Master node
+│   └── mysql-slave/       # MySQL Slave node
+├── docker-compose.yaml    # Docker Orchestration
+└── README.md              # Documentation
 ```
 
 ## 🔧 Setup & Installation
@@ -47,7 +41,7 @@ ISAS/
 ### Prerequisites
 - Docker & Docker Compose installed
 
-### Run the Application
+### Run with Docker Compose (Recommended)
 1. **Clone/Download** the repository.
 2. Open a terminal in the project root.
 3. Run the following command:
@@ -55,14 +49,39 @@ ISAS/
 ```bash
 docker-compose up -d --build
 ```
-*This command starts one Master DB, one Slave DB, the API service, and the Nginx web server.*
+*Wait for a few seconds. The backend will automatically wait for the MySQL Master to be ready and the Slave to synchronize before starting.*
 
-Alternatively, to build the images individually:
+### Run Modules Individually (For GNS3 Deployment)
+หากต้องการนำไปใช้งานใน GNS3 คุณต้อง Build Image แยกทีละตัวเพื่อให้สามารถโหลดเข้าโหนดแต่ละตัวได้:
+
 ```bash
-docker build -t hotel-mysql-master -f mysql/master.Dockerfile ./mysql
-docker build -t hotel-mysql-slave -f mysql/slave.Dockerfile ./mysql
-docker build -t hotel-api ./Database
-docker build -t hotel-web -f Dockerfile.web .
+# 1. Build MySQL Master (Node: SQL-Master)
+docker build -t isas-sql-master ./modules/mysql-master
+
+# 2. Build MySQL Slave (Node: SQL-Slave)
+docker build -t isas-sql-slave ./modules/mysql-slave
+
+# 3. Build Backend API (Node: Backend-API)
+docker build -t isas-api ./modules/backend
+
+# 4. Build Frontend Web (Node: Frontend-Web)
+docker build -t isas-web ./modules/frontend
+```
+
+### 📡 Monitoring Configuration (Zabbix)
+ทุก Image ถูกติดตั้ง **Zabbix Agent 2** ไว้ภายในแล้ว เพื่อความสมจริงในการจำลองเครือข่าย คุณต้องตั้งค่า Environment Variables เมื่อรันแต่ละ Container ดังนี้:
+
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `ZBX_SERVER_HOST` | IP ของ Zabbix Server ใน GNS3 | `192.168.1.100` |
+| `ZBX_HOSTNAME` | ชื่อ Host ที่จะปรากฏใน Zabbix | `Hotel-SQL-Master` |
+
+**ตัวอย่างการรันแบบ manual (ถ้าไม่ใช้ Compose):**
+```bash
+docker run -d --name web-node \
+  -e ZBX_SERVER_HOST=192.168.1.100 \
+  -e ZBX_HOSTNAME=Hotel-Web \
+  isas-web
 ```
 
 4. **Verify Replication**:
