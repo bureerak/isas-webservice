@@ -1,13 +1,11 @@
 FROM mysql:8.0
 
-# Install zabbix-agent2
-RUN apt-get update && \
-    apt-get install -y wget && \
-    wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-4%2Bdebian11_all.deb && \
-    dpkg -i zabbix-release_6.0-4+debian11_all.deb && \
-    apt-get update && \
-    apt-get install -y zabbix-agent2 && \
-    rm -rf /var/lib/apt/lists/* zabbix-release_6.0-4+debian11_all.deb
+# Install zabbix-agent2 (Oracle Linux 9 / x86_64 - using direct RPM approach)
+RUN microdnf install -y rpm && \
+    rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/9/x86_64/zabbix-release-6.0-4.el9.noarch.rpm && \
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/zabbix-agent2-plugins.repo && \
+    microdnf install -y zabbix-agent2 && \
+    microdnf clean all
 
 # Copy configuration
 COPY ./conf/master.cnf /etc/mysql/conf.d/master.cnf

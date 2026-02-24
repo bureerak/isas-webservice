@@ -1,3 +1,5 @@
+FROM nginx:alpine
+
 # Install zabbix-agent2
 RUN apk add --no-cache zabbix-agent2
 
