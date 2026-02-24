@@ -1,3 +1,5 @@
+FROM mysql:8.0
+
 # Install zabbix-agent2
 RUN apt-get update && \
     apt-get install -y wget && \
@@ -5,7 +7,7 @@ RUN apt-get update && \
     dpkg -i zabbix-release_6.0-4+debian11_all.deb && \
     apt-get update && \
     apt-get install -y zabbix-agent2 && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* zabbix-release_6.0-4+debian11_all.deb
 
 # Copy configuration
 COPY ./conf/slave.cnf /etc/mysql/conf.d/slave.cnf
@@ -17,5 +19,5 @@ COPY ./init/init.sql /docker-entrypoint-initdb.d/init.sql
 COPY entrypoint.sh /usr/local/bin/custom-entrypoint.sh
 RUN chmod +x /usr/local/bin/custom-entrypoint.sh
 
-ENTRYPOINT ["custom-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/custom-entrypoint.sh"]
 CMD ["mysqld"]
